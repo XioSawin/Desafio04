@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Desafio 4 - Sawin Xiomara</title>
+    </head>
+
+    <body>
+
+        <input id="inp-text">
+        <span id="invText"></span>
+
+        <script type="module">
+
+            //mostrar el texto espejado al lado del input box pero usando método pipe y operadores rxjs.
+
+            import { fromEvent } from 'https://dev.jspm.io/rxjs@6/_esm2015';
+            import { map } from 'https://dev.jspm.io/rxjs@6/_esm2015/operators';
+            import { filter } from 'https://dev.jspm.io/rxjs@6/_esm2015/operators';
+
+            const input = document.getElementById('inp-text');
+            const inverse = document.getElementById('invText');
+            const observable = fromEvent(input, 'keyup'); 
+
+            let mirrorText = '';
+
+            const subscription= observable.pipe(
+                filter(event => {
+                        if((event.which <= 90 && event.which >=48) || event.which === 32) {
+                            return event;
+                        }
+                    }
+                ),
+                map( event => {
+                        //console.log(event);
+                        return event.key;
+                    }
+                )
+            ).subscribe( key => {
+                mirrorText += key;
+
+                if (mirrorText === 'error'){
+                    subscription.error("La palabra 'error' fue ingresada");
+                }
+
+                if (mirrorText === 'complete'){
+                    subscription.complete();
+                }
+
+                invText.textContent = mirrorText.split('').reverse().join('');
+
+                setTimeout( () => {
+                    subscription.unsubscribe(); 
+                    limpiar();
+                }, 30000) //a los 30 segundos lo desubscribo.
+
+            },  error => {
+                    console.log(error);
+                    limpiar();
+                }, 
+                ()=> { //complete
+                    console.log("La palabra 'complete' fue ingresada");
+                    limpiar();
+                }
+            
+            )
+
+            const limpiar = () => {
+                mirrorText = '';
+                input.value = '';
+                input.disabled = true;
+                inverse.textContent = '';
+            }
+
+        </script>
+    </body>
+</html>
